@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三体内部程序文件列表</title>
+    <link rel="stylesheet" href="styles.css"> <!-- 引用外部样式表 -->
+    <style>
+        /* 流光渐变效果 */
+        .gradient-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            background: -webkit-linear-gradient(135deg,
+                    #0eaf6d,
+                    #ff6ac6 25%,
+                    #147b96 50%,
+                    #e6d205 55%,
+                    #2cc4e0 60%,
+                    #8b2ce0 80%,
+                    #ff6384 95%,
+                    #08dfb4);
+            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-background-size: 200% 100%;
+            -webkit-animation: flowCss 12s infinite linear;
+        }
+
+        @-webkit-keyframes flowCss {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: -400% 0;
+            }
+        }
+
+        .gradient-title:hover {
+            -webkit-animation: flowCss 4s infinite linear;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="gradient-title">三体内部程序</div>
+    </header>
+    <nav>
+        <a href="https://github.com/wuhuang2/ETO" target="_blank">访问 GitHub 仓库</a>
+    </nav>
+    <main>
+        <h2>文件列表（按版本号排序）</h2>
+        <ul>
+            <li>三体内部程序v1.0.cpp</li>
+            <li>三体内部程序v3.1.1.cpp</li>
+            <li>三体内部程序v5.1.1 .cpp</li>
+            <li>三体内部程序v6.1.1.cpp</li>
+            <li>三体内部程序v7.1.1.cpp</li>
+            <li>三体内部程序v8.1.1 α版（Alpha版）.cpp</li>
+            <li>三体内部程序v8.1.1 β版（Beta.1版）.cpp</li>
+            <li>三体内部程序v8.1.1 β版（Beta.2版）.cpp</li>
+            <li>三体内部程序v8.1.1 β版（Beta.3版）.cpp</li>
+            <li>三体内部程序v9.1.1 Release版.cpp</li>
+            <li>三体内部程序v10.1.1 Release版.cpp</li>
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; 2024 RCX. All rights reserved.</p>
+    </footer>
+</body>
+</html>
