@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI记账本程序 - 文档中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            scroll-behavior: smooth;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            animation: shine 8s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(30deg) translate(-10%, -10%); }
+            100% { transform: rotate(30deg) translate(10%, 10%); }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        nav {
+            background-color: var(--secondary-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0.8rem 0;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.3rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .card h2 {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 i {
+            margin-right: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .doc-content {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 400px;
+            border: 1px solid #e1e4e8;
+            transition: max-height 0.5s ease;
+            position: relative;
+        }
+
+        .doc-content.collapsed {
+            max-height: 150px;
+            overflow: hidden;
+        }
+
+        .doc-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(248,249,250,0), rgba(248,249,250,1));
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .doc-content:not(.collapsed)::after {
+            opacity: 0;
+        }
+
+        .toggle-doc {
+            display: block;
+            margin-top: 10px;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .toggle-doc:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn i {
+            margin-right: 0.6rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 联系图标样式 */
+        .contact-icons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .contact-icon {
+            color: var(--secondary-color);
+            font-size: 2.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .contact-icon:hover {
+            transform: translateY(-5px);
+            color: var(--primary-color);
+        }
+        
+        /* 鼠标悬停提示 */
+        .contact-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .contact-icon:hover::after {
+            opacity: 1;
+        }
+
+        /* 回到顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 99;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .social-links {
+            margin: 1.5rem 0;
+        }
+        
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .nav-container {
+                flex-direction: column;
+                align-items: center;
+                padding: 0.5rem 0;
+            }
+            
+            .nav-link {
+                width: 90%;
+                margin: 0.3rem 0;
+                justify-content: center;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .doc-content {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+
+            /* 响应式调整联系图标 */
+            .contact-icons {
+                gap: 15px;
+            }
+            .contact-icon {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* 三体内部程序样式 */
+        .trisolaran-program {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e1e4e8;
+        }
+
+        .trisolaran-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trisolaran-title:hover {
+            color: var(--primary-color);
+        }
+
+        .trisolaran-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .trisolaran-content.active {
+            max-height: 500px;
+        }
+
+        .trisolaran-list {
+            list-style-type: none;
+        }
+
+        .trisolaran-list li {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .trisolaran-list li:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>AI记账本程序文档中心</h1>
+            <p class="subtitle">查看完整的程序文档、许可协议和技术说明，获取最新版本的下载链接</p>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="nav-container">
+            <a href="#help" class="nav-link"><i class="fas fa-book"></i>帮助文档</a>
+            <a href="#agreement" class="nav-link"><i class="fas fa-file-contract"></i>用户协议</a>
+            <a href="#copyright" class="nav-link"><i class="fas fa-copyright"></i>版权声明</a>
+            <a href="#license" class="nav-link"><i class="fas fa-balance-scale"></i>许可协议</a>
+            <a href="#legal" class="nav-link"><i class="fas fa-gavel"></i>法律声明</a>
+            <a href="#contact" class="nav-link"><i class="fas fa-envelope"></i>联系我们</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <section id="help" class="card">
+            <h2><i class="fas fa-book-open"></i>帮助文档</h2>
+            <p>完整的AI记账本程序使用说明和技术文档，包含安装指南、功能说明和常见问题解答。</p>
+            
+            <div class="doc-content">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记账本程序帮助文档</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+            font-weight: 600;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            border-bottom: 3px solid #4a90e2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            font-size: 1.4rem;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        ul {
+            padding-left: 1.5rem;
+        }
+        li {
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        code {
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #666;
+        }
+        .warning {
+            color: #e67e22;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+        }
+        .note {
+            color: #27ae60;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background-color: #4a90e2;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>记账本程序帮助文档</h1>
+    </header>
+    <div class="container">
+        <div class="section">
+            <h2><span class="icon">💻</span> 一、开发环境与理论支持环境</h2>
+            <ul>
+                <li>操作系统：Windows 10 x86</li>
+                <li>开发工具：Python原生IDLE</li>
+                <li>数据库：SQLite3</li>
+                <li>语音识别模型：Vosk（模型文件：vosk-model-small-cn-0.22）</li>
+                <li>理论上支持Windows10 x64 、Windows10 x86 、Windows11 x64 等Microsoft® Windows系列系统（不向下兼容）</li>
+                <li>因为使用跨平台的库，所以理论上支持 Apple inc. 的Mac OS系列系统 以及 Linux主流发行版（Ubuntu、Kali等）（不向下兼容）</li>
+                <li>开发时使用Windows10 x86环境开发 </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">⚙️</span> 二、技术原理</h2>
+            <ul>
+                <li>语音识别技术：基于 Vosk 的 KaldiRecognizer，利用深度学习模型对语音信号进行特征提取和模式匹配，实现语音到文本的转换。</li>
+                <li>自然语言处理：使用 jieba 分词对识别出的文本进行分词处理，提取关键信息（如日期、金额、币种等）。</li>
+                <li>数据库管理：采用 SQLite3 关系型数据库，实现数据的存储、查询、更新和删除操作。</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📝</span> 三、开发语言</h2>
+            <ul>
+                <li>编程语言：Python 3.13.0</li>
+                <li>GUI 库：PyQt5</li>
+                <li>语音处理库：pyaudio、vosk、wave</li>
+                <li>文本处理库：re、json、jieba</li>
+                <li>多线程库：QThread</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🌐</span> 四、使用的开源项目</h2>
+            <ul>
+                <li>PyQt5：用于构建图形用户界面，提供丰富的控件和布局管理器，实现界面的交互和显示。</li>
+                <li>Vosk：轻量级的语音识别引擎，支持多种语言，能够实时将语音转换为文本。</li>
+                <li>pyaudio：用于音频数据的输入和输出，实现与麦克风和扬声器的交互。</li>
+                <li>jieba：中文分词库，能够对中文文本进行高效的分词处理，为信息提取提供支持。</li>
+                <li>SQLite3：嵌入式关系型数据库，方便数据的本地存储和管理。</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📊</span> 五、程序功能概述</h2>
+            <ul>
+                <li>账本管理：添加、删除、修改和查询账目记录，支持多种币种和收支类型。</li>
+                <li>语音输入：通过语音识别技术，将语音转换为文本，并自动提取相关信息添加到账本中。</li>
+                <li>数据搜索：根据关键词搜索账目记录，快速定位所需信息。</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📋</span> 六、使用说明</h2>
+            <ol>
+                <li>启动程序：运行记账本程序，进入主界面。</li>
+                <li>添加账目记录：点击 “添加账本” 按钮，在弹出的对话框中填写相关信息（日期、金额、币种、收支类型、详细分类、备注信息），然后点击 “添加记录” 按钮保存。</li>
+                <li>语音输入：点击 “开始录音” 按钮，对着麦克风说话，程序会自动识别语音并转换为文本，提取关键信息后添加到账本中。录音过程中可以点击 “结束录音” 按钮停止录音。</li>
+                <li>搜索记录：点击 “搜索记录” 按钮，在弹出的对话框中输入关键词，点击 “搜索” 按钮查看符合条件的记录。</li>
+                <li>修改记录：在表格中选择要修改的记录，点击 “修改” 按钮，在弹出的对话框中修改相关信息后点击 “修改记录” 按钮保存。</li>
+                <li>删除记录：在表格中选择要删除的记录，点击 “回收站” 按钮，确认删除后记录将从数据库中移除。</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">❓</span> 七、常见问题解答</h2>
+            <div class="question">
+                <h3>语音识别不准确怎么办？</h3>
+                <ul>
+                    <li>确保麦克风正常工作，周围环境安静，减少噪音干扰。</li>
+                    <li>说话时尽量清晰、语速适中，避免使用过于复杂的句子。</li>
+                    <li>可以尝试多次录音，选择识别结果最准确的一次。</li>
+                </ul>
+            </div>
+            <div class="question">
+                <h3>如何更新语音识别模型？</h3>
+                <p>访问 Vosk 官方网站，下载最新的中文语音识别模型文件，替换程序所在目录下的 <code>vosk-model-small-cn-0.22</code> 文件夹即可（同时修改源代码文件）。</p>
+            </div>
+            <div class="question">
+                <h3>程序运行报错怎么办？</h3>
+                <ul>
+                    <li>检查 Python 环境是否正确配置，相关依赖库是否安装完整。</li>
+                    <li>查看错误信息，根据提示排查问题。如果无法解决，可以联系开发者寻求帮助。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            </div>
+            <button class="toggle-doc">展开/收起文档</button>
+            
+            <div class="btn-group">
+                <a href="帮助文档.html" class="btn btn-primary"><i class="fas fa-download"></i>下载HTML版</a>
+                <a href="https://github.com/wuhuang2/PennAicoin/blob/main/%E5%B8%AE%E5%8A%A9%E6%96%87%E6%A1%A3.html" class="btn btn-secondary"><i class="fab fa-github"></i>查看GitHub源文件</a>
+            </div>
+        </section>
+        
+        <section id="agreement" class="card">
+            <h2><i class="fas fa-file-signature"></i>用户协议</h2>
+            <p>使用AI记账本程序前请仔细阅读用户许可协议，了解您的权利和义务。</p>
+            
+            <div class="doc-content">
+记账本程序用户许可协议
+一、版权声明
+记账本程序（以下简称"本软件"）由GitHub用户 wuhuang2 开发并拥有。本软件的一切版权、商标权、专利权、商业秘密等知识产权均归开发者所有。本协议旨在规定用户使用本软件时的权利与义务。
+二、许可范围
+非商业使用许可：开发者授予用户个人非商业性质的、可撤销的、非排他的使用许可。用户可在个人计算机或其他个人设备上安装、使用本软件。
+禁止分发与传播：未经开发者书面许可，用户不得以任何形式或任何途径分发、传播、出租、出售本软件，包括但不限于通过互联网、局域网、光盘等介质。
+禁止修改与逆向工程：用户不得对本软件进行反向工程、反编译、修改源代码或创建衍生作品。用户不得删除或修改本软件中的任何版权标识或商标。
+三、用户权利
+使用权利：在遵守本协议的前提下，用户有权使用本软件提供的各项功能，包括但不限于记录、查询、修改、删除个人记账信息。
+隐私保护权利：用户有权要求开发者保护其个人信息及记账数据，不得泄露给第三方，除非法律另有规定或用户书面同意。
+软件更新权利：用户有权获得开发者提供的本软件的更新版本，以提升使用体验和功能。
+四、用户义务
+合法使用义务：用户应遵守相关法律法规，不得利用本软件进行任何违法活动，包括但不限于洗钱、诈骗、侵犯他人权益等。
+不侵权义务：用户不得侵犯开发者的知识产权或其他第三方的合法权益。
+维护软件完整性义务：用户不得破坏本软件的技术保护措施或完整性，不得干扰本软件的正常运行。
+数据备份义务：用户应定期备份个人记账数据，以防数据丢失或损坏。
+五、隐私政策
+信息收集：本软件在运行过程中可能收集用户的设备信息、操作行为等数据，但不会收集用户的个人身份信息，除非用户自愿提供。
+信息使用：收集到的数据将仅用于软件功能的实现和优化，不会用于其他目的或泄露给第三方，除非法律要求或用户书面同意。
+数据安全：开发者将采取合理的技术和管理措施保护用户数据的安全，防止数据泄露、损坏或丢失。
+六、免责声明
+软件按现状提供：本软件按现状提供，开发者不保证其无瑕疵、无病毒或完全符合用户需求。用户自行承担使用风险。
+不保证持续运行：开发者不保证本软件始终可用或无中断。因网络故障、服务器维护等原因导致的暂时无法使用，开发者不承担责任。
+不承担间接损失：对于因使用本软件而产生的间接、附带或后果性的损失（包括但不限于数据丢失、利润减少等），开发者不承担责任。
+七、协议的终止
+用户违约导致的终止：若用户违反本协议的任何条款，开发者有权单方面终止本协议，并可能要求用户停止使用本软件、删除软件等。
+开发者权利：协议终止后，用户应立即停止使用本软件，并删除或销毁软件的全部副本。开发者有权收回用户因本协议获得的所有权利。
+八、争议解决
+协商解决：因本协议引起的任何争议，双方应首先通过友好协商解决；协商不成的，任何一方均有权向有管辖权的人民法院提起诉讼。
+适用法律：本协议的订立、执行和解释均适用中华人民共和国法律。
+九、协议的修改
+开发者有权根据需要修改本协议。修改后的协议将通过软件更新或官方网站公布。用户继续使用本软件视为接受修改后的协议。
+十、联系方式
+如您对本协议有任何疑问或需要进一步的信息，请联系开发者：
+联系人：wuhuang2
+邮箱：PennAicoinProgram@outlook.com
+电话：暂无
+地址：信息已删除
+邮编：信息已删除
+            </div>
+            <button class="toggle-doc">展开/收起文档</button>
+            
+            <div class="btn-group">
+                <a href="user_agreement.txt" class="btn btn-primary"><i class="fas fa-download"></i>下载TXT版</a>
+                <a href="https://github.com/wuhuang2/PennAicoin/blob/main/user_agreement.txt" class="btn btn-secondary"><i class="fab fa-github"></i>查看GitHub源文件</a>
+            </div>
+        </section>
+        
+        <section id="copyright" class="card">
+            <h2><i class="fas fa-copyright"></i>版权声明</h2>
+            <p>AI记账本程序的版权信息和特殊授权条款。</p>
+            
+            <div class="doc-content">
+# ======================================================================== #
+# Copyright (c) 2025 wuhuang2                                            #
+#                                                                          #
+# Licensed under the MIT License with Extended Rights (the "License");      #
+# you may not use this file except in compliance with the License.          #
+# See the LICENSE file in the project root for full terms.                  #
+#                                                                          #
+# Special grants apply to specific users:                                   #
+# - Commercial use permitted with revenue sharing (Sec.3a)                  #
+# - Patent feedback required (Sec.3b)                                      #
+# ======================================================================== #
+            </div>
+            <button class="toggle-doc">展开/收起文档</button>
+            
+            <div class="btn-group">
+                <a href="copyright.txt" class="btn btn-primary"><i class="fas fa-download"></i>下载TXT版</a>
+                <a href="https://github.com/wuhuang2/PennAicoin/blob/main/copyright.txt" class="btn btn-secondary"><i class="fab fa-github"></i>查看GitHub源文件</a>
+            </div>
+        </section>
+        
+        <section id="license" class="card">
+            <h2><i class="fas fa-balance-scale"></i>许可协议</h2>
+            <p>AI记账本程序采用MIT许可证。</p>
+            
+            <div class="doc-content">
+MIT 许可证
+
+版权所有 (c) 2025 wuhuang2
+
+特此免费授予任何获得本软件及相关文档文件（以下简称"软件"）的人士不受限制地处理本软件的权利，包括但不限于使用、复制、修改、合并、发布、分发、再许可和/或销售软件的副本，但须遵守以下条件：
+
+上述版权声明和本许可声明须包含在软件的所有副本或主要部分中。
+
+本软件按"原样"提供，不附带任何明示或暗示的担保，包括但不限于适销性、特定用途适用性和非侵权担保。在任何情况下，作者或版权持有人均不对因软件或使用引起的索赔、损害或其他责任负责。
+            </div>
+            <button class="toggle-doc">展开/收起文档</button>
+            
+            <div class="btn-group">
+                <a href="MIT%20License%20ZH-CN.txt" class="btn btn-primary"><i class="fas fa-download"></i>下载简体中文版</a>
+                <a href="MIT%20License%20ZH-TW.txt" class="btn btn-primary"><i class="fas fa-download"></i>下载繁体中文版</a>
+                <a href="MIT%20License%20EN.txt" class="btn btn-primary"><i class="fas fa-download"></i>下载英文版</a>
+                <a href="https://github.com/wuhuang2/PennAicoin/blob/main/LICENSE" class="btn btn-secondary"><i class="fab fa-github"></i>查看GitHub源文件</a>
+            </div>
+        </section>
+        
+        <section id="contact" class="card">
+            <h2><i class="fas fa-envelope"></i>联系我们</h2>
+            <p>通过以下方式联系开发者获取技术支持或提供反馈</p>
+            
+            <div class="contact-icons">
+                <!-- GitHub -->
+                <a href="https://github.com/wuhuang2?tab=repositories" 
+                   target="_blank"
+                   class="contact-icon"
+                   data-tooltip="GitHub仓库">
+                   <i class="fab fa-github"></i>
+                </a>
+                
+                <!-- 邮箱 -->
+                <a href="mailto:PennAicoinProgram@outlook.com?subject=关于AI记账本程序" 
+                   class="contact-icon"
+                   data-tooltip="发送邮件">
+                   <i class="fas fa-envelope"></i>
+                </a>
+                
+                <!-- 哔哩哔哩 -->
+                <a href="https://space.bilibili.com/3546734730938563?spm_id_from=333.1007.0.0" 
+                   target="_blank"
+                   class="contact-icon"
+                   data-tooltip="哔哩哔哩主页">
+                   <i class="fab fa-bilibili"></i>
+                </a>
+            </div>
+        </section>
+        
+        <section class="card">
+            <h2><i class="fas fa-file-archive"></i>程序下载</h2>
+            <p>获取AI记账本程序的最新版本和相关资源。</p>
+            
+            <div class="btn-group">
+                <a href="记账本v0.0.8.py" class="btn btn-success"><i class="fas fa-download"></i>下载记账本程序(v0.0.8)</a>
+                <a href="https://github.com/wuhuang2/PennAicoin/blob/main/%E8%AE%B0%E8%B4%A6%E6%9C%ACv0.0.8.py" class="btn btn-accent"><i class="fab fa-github"></i>查看GitHub源文件</a>
+            </div>
+        </section>
+
+        <!-- 三体内部程序 -->
+        <section class="trisolaran-program">
+            <div class="trisolaran-title" id="trisolaran-toggle">
+                <span>三体内部程序文件列表</span>
+                <i class="fas fa-chevron-down" id="trisolaran-icon"></i>
+            </div>
+            <div class="trisolaran-content" id="trisolaran-content">
+                <div class="trisolaran-list">
+                    <ul>
+                        <li>三体内部程序v1.0.cpp</li>
+                        <li>三体内部程序v3.1.1.cpp</li>
+                        <li>三体内部程序v5.1.1 .cpp</li>
+                        <li>三体内部程序v6.1.1.cpp</li>
+                        <li>三体内部程序v7.1.1.cpp</li>
+                        <li>三体内部程序v8.1.1 α版（Alpha版）.cpp</li>
+                        <li>三体内部程序v8.1.1 β版（Beta.1版）.cpp</li>
+                        <li>三体内部程序v8.1.1 β版（Beta.2版）.cpp</li>
+                        <li>三体内部程序v8.1.1 β版（Beta.3版）.cpp</li>
+                        <li>三体内部程序v9.1.1 Release版.cpp</li>
+                        <li>三体内部程序v10.1.1 Release版.cpp</li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a href="https://github.com/wuhuang2/ETO" class="btn btn-secondary"><i class="fas fa-github"></i>访问GitHub仓库</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" title="回到顶部">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <h3>AI记账本程序</h3>
+            <p>基于语音识别与自然语言处理的智能记账解决方案</p>
+            
+            <div class="social-links">
+                <a href="https://github.com/wuhuang2?tab=repositories" target="_blank"><i class="fab fa-github"></i></a>
+                <a href="mailto:PennAicoinProgram@outlook.com?subject=关于AI记账本程序"><i class="fas fa-envelope"></i></a>
+                <a href="https://space.bilibili.com/3546734730938563?spm_id_from=333.1007.0.0" target="_blank"><i class="fab fa-bilibili"></i></a>
+            </div>
+            
+            <p>&copy; 2025 wuhuang2. 保留所有权利.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 文档内容展开/收起功能
+        document.querySelectorAll('.toggle-doc').forEach(button => {
+            button.addEventListener('click', function() {
+                const docContent = this.previousElementSibling;
+                docContent.classList.toggle('collapsed');
+                this.textContent = docContent.classList.contains('collapsed') ? '展开文档' : '收起文档';
+            });
+        });
+
+        // 三体内部程序展开/收起功能
+        const trisolaranToggle = document.getElementById('trisolaran-toggle');
+        const trisolaranContent = document.getElementById('trisolaran-content');
+        const trisolaranIcon = document.getElementById('trisolaran-icon');
+
+        trisolaranToggle.addEventListener('click', function() {
+            trisolaranContent.classList.toggle('active');
+            trisolaranIcon.classList.toggle('fa-chevron-down');
+            trisolaranIcon.classList.toggle('fa-chevron-up');
+        });
+
+        // 滚动时显示/隐藏回到顶部按钮
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // 点击回到顶部
+        document.querySelector('.back-to-top').addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 导航栏高亮当前部分
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', function() {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= (sectionTop - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 卡片动画效果
+        const cards = document.querySelectorAll('.card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
